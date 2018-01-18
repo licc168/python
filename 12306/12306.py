@@ -10,7 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 SW:商务  YD:一等座  ED:二等座 GR:高软 PR:软 DW:动卧 YW:硬卧  YZ:硬座 RZ 软座
 '''
 username = "licchuo168"
-password = "licc5998012"
+password = "111111"
 login_url = "https://kyfw.12306.cn/otn/login/init"
 initmy_url = "https://kyfw.12306.cn/otn/index/initMy12306"
 ticket_url = "https://kyfw.12306.cn/otn/leftTicket/init"
