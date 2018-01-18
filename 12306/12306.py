@@ -6,20 +6,35 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 '''
-12306 相关参数配置区域
-SW:商务  YD:一等座  ED:二等座 GR:高软 PR:软 DW:动卧 YW:硬卧  YZ:硬座 RZ 软座
+实现功能：
+   1）根据车次和座位选票 目前优先级：车次>座位  
+   2）查询超时重刷
+   3）自动提交订单
+   
+12306相关参数
+座位简写----SW:商务  YD:一等座  ED:二等座 GR:高软 PR:软 DW:动卧 YW:硬卧  YZ:硬座 RZ 软座
+选座位下拉值------ 3:硬卧 1：硬座 4：软卧 O：二等座 M:一等座  9商务座
 '''
 username = "licchuo168"
-password = "111111"
+password = "111111111"
 login_url = "https://kyfw.12306.cn/otn/login/init"
 initmy_url = "https://kyfw.12306.cn/otn/index/initMy12306"
 ticket_url = "https://kyfw.12306.cn/otn/leftTicket/init"
 mp_url="https://kyfw.12306.cn/otn/confirmPassenger/initDc"#购票页面
 
+#可在cookie里面找
 fromStation = "%u676D%u5DDE%2CHZH"#杭州
 toStation="%u4E5D%u6C5F%2CJJG"#九江
 fromDate="2018-01-19"
 
+
+#维护一个座位和下拉值的对应关系
+zuowei_select = {"SW":"9","YD":"M","ED":"O","PR":"4","YW":"3","YZ":"1"}
+
+
+'''
+备注：车次和座位 排在前面则优先级越高
+'''
 checi=["G1463","G1583"]
 
 zuocis=["SW","YD","ED","GR"]
@@ -103,21 +118,45 @@ def sp():
                 #判断座位是否是想要的座位
                 zuociFlag = False
                 for zc in zuocis:
+                    #条件满足 有票
                     if checiInfo[zc] != '--':
-                        zuociFlag = True
-                if zuociFlag :
-                    print("车次：" + tnumber + " " + fromToStation + " " + fromToDate + "历时：" + fromToDate + "商务:" + cells[
-                        1].text + " 一等：" + cells[2].text + " 二等：" + cells[3].text + " 高软：" + cells[4].text + " 软：" +
-                          cells[5].text
-                          + " 动卧：" + cells[6].text + " 硬卧：" + cells[7].text + " 软座：" + cells[8].text + " 硬座：" + cells[
-                              9].text)
-                    # 以上条件都满足 开始购票啦
-                    btnElm.click()
-                    #browser.get(mp_url)
+                        #座位下拉值
+                        zuoweiSelect = zuowei_select[zc]
+                        # 打印车次信息
+                        showCheciInfo(tnumber, fromToStation, fromToDate, cells)
+                        # 以上条件都满足 开始购票啦
+                        currentWin = browser.current_window_handle
+                        btnElm.click()
+                        # 跳转到购票页面
+                        handles = browser.window_handles
+                        for i in handles:
+                            if currentWin == i:
+                                continue
+                            else:
+                                # 将driver与新的页面绑定起来
+                                browser = browser.switch_to_window(i)
+                        #选人 TODO 这个还需要优化 根据人名字匹配 我现在默认第一个人
+                        WebDriverWait(browser, 6).until(EC.presence_of_element_located((By.ID, "normalPassenger_0")))
+                        browser.find_element_by_id("normalPassenger_0").click()
+                        #选座位
 
-                    browser.switch_to_window(browser.window_handles[1])
-                    browser.find_element_by_id("normalPassenger_0").click() #选择联系人
+                        browser.find_element_by_id("seatType_1").send_keys(zuoweiSelect)
+                        #一切准备就绪 提交订单
+                        browser.find_element_by_id("submitOrder_id").click()
+
+
+# 打印车次信息
+def showCheciInfo(tnumber,fromToStation,fromToDate,cells):
+    print("车次：" + tnumber + " " + fromToStation + " " + fromToDate + "商务:" + cells[1].text
+        + " 一等：" + cells[2].text + " 二等：" + cells[3].text + " 高软：" + cells[4].text + " 软：" +
+          cells[5].text+ " 动卧：" + cells[6].text + " 硬卧：" + cells[7].text + " 软座：" + cells[8].text + " 硬座：" + cells[9].text)
+
+
+# 选人啦
+# def selectPerson(browser):
+#     for i in browser.find_element_by_xpath("browser.find_element_by_xpath()"):
 
 
 
 sp()
+
