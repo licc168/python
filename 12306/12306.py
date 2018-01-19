@@ -16,7 +16,7 @@ from selenium.webdriver.support import expected_conditions as EC
 选座位下拉值------ 3:硬卧 1：硬座 4：软卧 O：二等座 M:一等座  9商务座
 '''
 username = "licchuo168"
-password = "11111111"
+password = "111111"
 login_url = "https://kyfw.12306.cn/otn/login/init"
 initmy_url = "https://kyfw.12306.cn/otn/index/initMy12306"
 ticket_url = "https://kyfw.12306.cn/otn/leftTicket/init"
@@ -69,7 +69,7 @@ def login():
 def sp():
     time.sleep(1)
     browser = login()
-    browser = webdriver.Chrome()
+    #browser = webdriver.Chrome()
     browser.get(ticket_url)
     browser.add_cookie({'name': '_jc_save_fromStation', 'value':fromStation})
     browser.add_cookie({'name': '_jc_save_toStation', 'value':toStation})
