@@ -16,7 +16,7 @@ from selenium.webdriver.support import expected_conditions as EC
 选座位下拉值------ 3:硬卧 1：硬座 4：软卧 O：二等座 M:一等座  9商务座
 '''
 username = "licchuo168"
-password = "licc5998012"
+password = "111111"
 login_url = "https://kyfw.12306.cn/otn/login/init"
 initmy_url = "https://kyfw.12306.cn/otn/index/initMy12306"
 ticket_url = "https://kyfw.12306.cn/otn/leftTicket/init"
@@ -25,7 +25,7 @@ mp_url="https://kyfw.12306.cn/otn/confirmPassenger/initDc"#购票页面
 #可在cookie里面找
 fromStation = "%u676D%u5DDE%2CHZH"#杭州
 toStation="%u4E5D%u6C5F%2CJJG"#九江
-fromDate="2018-01-19"
+fromDate="2018-02-14"
 
 
 #维护一个座位和下拉值的对应关系
@@ -41,7 +41,7 @@ type = 1
 
 checis=["G1463","G1583"]
 
-zuocis=["SW","YD","ED","GR"]
+zuocis=["ED","YD","GR"]
 
 
 def login():
