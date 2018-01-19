@@ -16,7 +16,7 @@ from selenium.webdriver.support import expected_conditions as EC
 选座位下拉值------ 3:硬卧 1：硬座 4：软卧 O：二等座 M:一等座  9商务座
 '''
 username = "licchuo168"
-password = "11111"
+password = "111111"
 login_url = "https://kyfw.12306.cn/otn/login/init"
 initmy_url = "https://kyfw.12306.cn/otn/index/initMy12306"
 ticket_url = "https://kyfw.12306.cn/otn/leftTicket/init"
@@ -25,7 +25,7 @@ mp_url="https://kyfw.12306.cn/otn/confirmPassenger/initDc"#购票页面
 #可在cookie里面找
 fromStation = "%u676D%u5DDE%2CHZH"#杭州
 toStation="%u4E5D%u6C5F%2CJJG"#九江
-fromDates=["2018-02-14","2018-02-13"]
+fromDates=["2018-01-20"]
 
 
 #维护一个座位和下拉值的对应关系
@@ -43,6 +43,7 @@ checis=["G1463","G1583"]
 
 zuocis=["ED","YD","GR"]
 
+persons=["张三","李四"]
 
 def login():
     browser = webdriver.Chrome()
@@ -189,21 +190,31 @@ def buyTicket(browser,currentWin,zuoweiSelect):
         else:
             # 将driver与新的页面绑定起来
             browser = browser.switch_to_window(i)
-    # 选人 TODO 这个还需要优化 根据人名字匹配 我现在默认第一个人
-    WebDriverWait(browser, 6).until(EC.presence_of_element_located((By.ID, "normalPassenger_0")))
-    browser.find_element_by_id("normalPassenger_0").click()
+    # 选人
+    selectPerson(browser)
+
     # 选座位
     browser.find_element_by_id("seatType_1").send_keys(zuoweiSelect)
     # 一切准备就绪 提交订单
-    browser.find_element_by_id("submitOrder_id").click()
-    #
+    submitOrder_id =  WebDriverWait(browser, 2).until(EC.presence_of_element_located((By.ID, "submitOrder_id")))
+    submitOrder_id.click()
+    #确认订单
+    qr_submit_id =  WebDriverWait(browser, 2).until(EC.presence_of_element_located((By.ID, "qr_submit_id")))
+    submitOrder_id.click()
 
 
 
 
-# 选人啦
-# def selectPerson(browser):
-#     for i in browser.find_element_by_xpath("browser.find_element_by_xpath()"):
+
+# 根据人的名字自动选中人
+def selectPerson(browser):
+    time.sleep(1)
+    for person in browser.find_elements_by_xpath("//ul[@id='normal_passenger_id']/li"):
+        personName = person.text
+        if personName in persons:
+            person.find_element_by_tag_name("input").click()
+
+
 
 if __name__ == '__main__':
     main()
