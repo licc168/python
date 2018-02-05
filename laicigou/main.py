@@ -3,6 +3,7 @@
 import requests
 import time
 import json
+
 from laicigou import  login
 from laicigou import  config
 
@@ -11,14 +12,14 @@ from laicigou import  config
 '''
 获取数据接口
 '''
-
+headers = {'content-type': 'application/json'}
 def queryMarketData(pageNo,pageSize,querySortType):
-    headers = {'content-type': 'application/json'}
+
     try:
         data ={
             "appId": 1,
             "lastAmount":None,
-            "lastRareDegree":None,
+            "lastRareDegree":3,
             "pageNo": pageNo,
             "pageSize": pageSize,
             "petIds": [],
@@ -43,17 +44,17 @@ def queryMarketData(pageNo,pageSize,querySortType):
             raise BusinessException("接口获取错误")
     else:
         raise BusinessException("接口异常"+str(status))
-def purchase(self, pet):
+def purchase(petId,request):
     try:
-        pet_id = pet.get(u"petId")
+
         data = {
             "appId":1,
-            "petId":pet_id,
+            "petId":petId,
             "requestId":1517730660382,
             "tpl":""
         }
 
-        page = requests.post("https://pet-chain.baidu.com/data/txn/create", headers=self.headers, data=json.dumps(data), timeout=2)
+        page = request.post("https://pet-chain.baidu.com/data/txn/create", headers=headers, data=json.dumps(data), timeout=2)
         print (page.json())
     except Exception as e:
         pass
@@ -63,17 +64,21 @@ AMOUNT_ASC 金额排序
 RAREDEGREE_DESC  稀有度排序
 '''
 def main():
-   # request = login.login(config.username,config.password)
+    request = login.login(config.username,config.password)
     while True:
         time.sleep(2)
         try:
          data =  queryMarketData(1,10,"AMOUNT_ASC")
 
          for item in data:
-
-             print(json.dumps(item))
-
-
+             #没猜错的话这个是等级  0-4
+             rareDegree = item["rareDegree"]
+             amount = float(item["amount"])
+             maxAmount = config.rares[rareDegree]
+             petid = item["petId"]
+             print("等级： "+str(rareDegree)+"价格："+str(amount))
+             if(amount<=maxAmount):
+                 purchase(petid,request)
         except BusinessException as e:
             print(e.value)
             continue
