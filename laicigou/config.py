@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-username = 'licc168'
-password = 'licc5998012'
+username = '1111'
+password = '11111'
 
 '''
 putong      普通品质价格

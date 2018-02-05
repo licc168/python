@@ -63,7 +63,7 @@ AMOUNT_ASC 金额排序
 RAREDEGREE_DESC  稀有度排序
 '''
 def main():
-    request = login.login(config.username,config.password)
+   # request = login.login(config.username,config.password)
     while True:
         time.sleep(2)
         try:
@@ -71,7 +71,7 @@ def main():
 
          for item in data:
 
-             print("petType:" + str(item["petType"]) + " amount: " + str(item["amount"]))
+             print(json.dumps(item))
 
 
         except BusinessException as e:
