@@ -1,4 +1,5 @@
 # -*- coding:utf8 -*-
+import base64
 
 import requests
 import time
@@ -25,7 +26,7 @@ def queryMarketData(pageNo,pageSize,querySortType):
             "petIds": [],
             "querySortType": querySortType,
             "tpl":"",
-            "requestId":1517730660382
+            "requestId":time.time()
         }
         print(data)
         s =  requests.post("https://pet-chain.baidu.com/data/market/queryPetsOnSale",  data=json.dumps(data), headers=headers,timeout=5)
@@ -44,13 +45,14 @@ def queryMarketData(pageNo,pageSize,querySortType):
             raise BusinessException("接口获取错误")
     else:
         raise BusinessException("接口异常"+str(status))
+
 def purchase(petId,request):
     try:
 
         data = {
             "appId":1,
             "petId":petId,
-            "requestId":1517730660382,
+            "requestId":time.time(),
             "tpl":""
         }
 
@@ -65,8 +67,9 @@ RAREDEGREE_DESC  稀有度排序
 '''
 def main():
     request = login.login(config.username,config.password)
+
     while True:
-        time.sleep(2)
+
         try:
          data =  queryMarketData(1,10,"AMOUNT_ASC")
 
@@ -82,7 +85,6 @@ def main():
         except BusinessException as e:
             print(e.value)
             continue
-
 
 
 
