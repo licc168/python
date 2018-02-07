@@ -7,7 +7,7 @@ import json
 
 from laicigou import  login
 from laicigou import  config
-
+from selenium import webdriver
 
 
 '''
@@ -28,7 +28,7 @@ def queryMarketData(pageNo,pageSize,querySortType):
             "tpl":"",
             "requestId":time.time()
         }
-        print(data)
+       # print(data)
         s =  requests.post("https://pet-chain.baidu.com/data/market/queryPetsOnSale",  data=json.dumps(data), headers=headers,timeout=5)
     except:
         raise BusinessException("服务器异常")
@@ -36,7 +36,7 @@ def queryMarketData(pageNo,pageSize,querySortType):
     if status==200:
         res = json.loads(s.content)
         msg = res["errorMsg"]
-        print(msg)
+
         if msg == "success":
             data = res["data"]["petsOnSale"]
             return data
@@ -64,9 +64,11 @@ def purchase(petId,request):
 '''
 AMOUNT_ASC 金额排序
 RAREDEGREE_DESC  稀有度排序
+
+根据链接手动刷狗
 '''
 def main():
-    request = login.login(config.username,config.password)
+    #request = login.login(config.username,config.password)
 
     while True:
 
@@ -79,9 +81,11 @@ def main():
              amount = float(item["amount"])
              maxAmount = config.rares[rareDegree]
              petid = item["petId"]
-             print("等级： "+str(rareDegree)+"价格："+str(amount))
              if(amount<=maxAmount):
-                 purchase(petid,request)
+                 print("等级： " + str(rareDegree) + "价格：" + str(amount))
+                 # 根据链接手动刷狗
+                 print(config.urlDetail+petid+"&validCode="+item["validCode"])
+
         except BusinessException as e:
             print(e.value)
             continue
