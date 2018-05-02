@@ -13,10 +13,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from start import common
+from start import redisClient
 '''
 
 '''
 urls={
+
+
+
       }
 
 
@@ -33,57 +37,57 @@ def start():
 
     while True:
         # 代理
-        proxyIp = requests.get(
-            "http://tvp.daxiangdaili.com/ip/?tid=555643727354866&num=1000").content
-        thisip = str(proxyIp, encoding="utf-8")
-        ipss=  re.sub(r'\r\n', ",", thisip)
-        ips =re.sub(r',+', ",", ipss).split(",")
-        for ip in ips:
-            poxyIp = "http://{}".format(ip)
-            if common.isUseIp(ip):
-               for url in urls.keys():
-                    count = urls[url]
-                    chromeOptions = webdriver.ChromeOptions()
-                    chromeOptions.add_argument('--proxy-server=' + poxyIp)
-                    prefs = {
-                       'profile.default_content_setting_values': {
-                           'images': 2
-                       }
-                    }
-                    chromeOptions.add_experimental_option("prefs", prefs)
-                    browser = webdriver.Chrome(chrome_options=chromeOptions)
-                    try:
-                        browser.set_page_load_timeout(20)
-                        browser.get(url)
-                    except TimeoutException:
+        try:
+            ips = redisClient.getProxyData()
+            for ip, status in ips.items():
+                ip = str(ip, encoding="utf-8")
+                if common.isUseIp(ip):
+                   for url in urls.keys():
+                    flag = redisClient.isExistsStartIP(url,ip)
+                    if(flag==False):
+                        try:
+                            # 最大条数
+                            max = urls[url]
+                            # 当前点赞条数
+                            count = redisClient.getSuccessStart(url)
+                            if count ==None:
+                                count=0
 
-                        browser.close()
-                        continue
-                    try:
-                        seatType_1 = WebDriverWait(browser, 2).until(
-                            EC.presence_of_element_located((By.ID, "likebg")))
-                        # scrollTop = 0
-                        # while scrollTop < 10000:
-                        #     time.sleep(0.5)
-                        #     scrollTop = scrollTop + 1000
-                        #     js = "var q=document.body.scrollTop=" + str(scrollTop)
-                        #     browser.execute_script(js)
-                        js = "var q=document.body.scrollTop=10000"
-                        browser.execute_script(js)
-                        # 点赞事件
-                        browser.find_element_by_id("likebg").click()
-                        time.sleep(2)
-                        # 显示统计数据
-                        browserNum = browser.find_element_by_class_name("readnum").text
-                        startNum = browser.find_element_by_id("praisenum").text
-                        count = count+1
-                        urls[url] =count
-                        print("url :"+url+" "+ browserNum + "  :点赞数：" + startNum+"  成功条数："+str(count) )
+                            if (count>= max):
+                                continue
+                            chromeOptions = webdriver.ChromeOptions()
+                            chromeOptions.add_argument('--proxy-server=' + ip)
+                            prefs = {
+                               'profile.default_content_setting_values': {
+                                   'images': 2
+                               }
+                            }
+                            chromeOptions.add_experimental_option("prefs", prefs)
+                            browser = webdriver.Chrome(chrome_options=chromeOptions)
 
-                    except:
-                        continue
-                    finally:
-                        browser.close()
+                            browser.set_page_load_timeout(20)
+                            browser.get(url)
+                            # seatType_1 = WebDriverWait(browser, 2).until(
+                            #     EC.presence_of_element_located((By.ID, "likebg")))
+                            # 点赞事件
+                            browser.find_element_by_id("likebg").click()
+                            time.sleep(1)
+                            # 显示统计数据
+                            browserNum = browser.find_element_by_class_name("readnum").text
+                            startNum = browser.find_element_by_id("praisenum").text
+                            count = count+1
+                            urls[url] =count
+                            print("url :"+url+" "+ browserNum + "  :点赞数：" + startNum+"  成功条数："+str(count) )
+                            redisClient.setUseStart(url,ip)
+                            redisClient.setSuccessStart(url,count+1)
+                        except :
+                            break
+                        finally:
+                            browser.close()
+                else:
+                    redisClient.deleteProxyData(ip)
+        except :
+            continue
 
 
 start()

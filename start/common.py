@@ -4,7 +4,7 @@ def isUseIp(ip):
     try:
         testIps = ip.split(":")
         port = testIps[1]
-        telnetlib.Telnet(testIps[0], port=port, timeout=1)
+        telnetlib.Telnet(testIps[0], port=port, timeout=10)
     except:
         return False
     return True
