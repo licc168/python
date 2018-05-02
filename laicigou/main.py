@@ -1,4 +1,5 @@
 # -*- coding:utf8 -*-
+import base64
 
 import requests
 import time
@@ -6,7 +7,7 @@ import json
 
 from laicigou import  login
 from laicigou import  config
-
+from selenium import webdriver
 
 
 '''
@@ -25,9 +26,9 @@ def queryMarketData(pageNo,pageSize,querySortType):
             "petIds": [],
             "querySortType": querySortType,
             "tpl":"",
-            "requestId":1517730660382
+            "requestId":time.time()
         }
-        print(data)
+       # print(data)
         s =  requests.post("https://pet-chain.baidu.com/data/market/queryPetsOnSale",  data=json.dumps(data), headers=headers,timeout=5)
     except:
         raise BusinessException("服务器异常")
@@ -35,7 +36,7 @@ def queryMarketData(pageNo,pageSize,querySortType):
     if status==200:
         res = json.loads(s.content)
         msg = res["errorMsg"]
-        print(msg)
+
         if msg == "success":
             data = res["data"]["petsOnSale"]
             return data
@@ -44,13 +45,14 @@ def queryMarketData(pageNo,pageSize,querySortType):
             raise BusinessException("接口获取错误")
     else:
         raise BusinessException("接口异常"+str(status))
+
 def purchase(petId,request):
     try:
 
         data = {
             "appId":1,
             "petId":petId,
-            "requestId":1517730660382,
+            "requestId":time.time(),
             "tpl":""
         }
 
@@ -62,11 +64,14 @@ def purchase(petId,request):
 '''
 AMOUNT_ASC 金额排序
 RAREDEGREE_DESC  稀有度排序
+
+根据链接手动刷狗
 '''
 def main():
-    request = login.login(config.username,config.password)
+    #request = login.login(config.username,config.password)
+
     while True:
-        time.sleep(2)
+
         try:
          data =  queryMarketData(1,10,"AMOUNT_ASC")
 
@@ -76,13 +81,14 @@ def main():
              amount = float(item["amount"])
              maxAmount = config.rares[rareDegree]
              petid = item["petId"]
-             print("等级： "+str(rareDegree)+"价格："+str(amount))
              if(amount<=maxAmount):
-                 purchase(petid,request)
+                 print("等级： " + str(rareDegree) + "价格：" + str(amount))
+                 # 根据链接手动刷狗
+                 print(config.urlDetail+petid+"&validCode="+item["validCode"])
+
         except BusinessException as e:
             print(e.value)
             continue
-
 
 
 
