@@ -77,25 +77,18 @@ def start():
                             browser.get(url)
 
                             print(url)
-                            # WebDriverWait(browser, 10).until(
-                            #     EC.presence_of_element_located((By.ID, "likebg"))).click()
-
+                            praisebg =  WebDriverWait(browser, 3).until(
+                                EC.presence_of_element_located((By.ID, "praisebg")))
+                            #
+                            # js = "var q=document.documentElement.scrollTop=10000"
+                            # browser.execute_script(js)
+                            time.sleep(10)
                             # # 点赞事件
-                            # browser.find_element_by_id("likebg").click()
-                            urlapi = url.replace("Home/Taskdetail/index/", "home/taskdetail/extensionpraise/")
-                            cookies = browser.get_cookies()
-                            jar = requests.cookies.RequestsCookieJar()
-
-                            for cookie in cookies:
-                                # print cookie['name']+":"+cookie['value']
-                                jar.set(cookie['name'], cookie['value'], domain='httpbin.org', path='/cookies')
-                            reponse = requests.get(urlapi,cookies=jar)
-                            print(reponse.text)
-                            time.sleep(1)
+                            praisebg.click()
+#
                             # 显示统计数据
 
                             count = count+1
-                            urls[url] =count
                             print("url :"+url+" success"+str(count) )
                             redisClient.setUseStart(url,ip)
                             redisClient.setSuccessStart(url,count+1)
