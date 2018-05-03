@@ -14,6 +14,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from start import common
 from start import redisClient
+from start import mysqlCli
+
 '''
 
 '''
@@ -42,17 +44,22 @@ def start():
             for ip, status in ips.items():
                 ip = str(ip, encoding="utf-8")
                 if common.isUseIp(ip):
-                   for url in urls.keys():
+                   urls =  mysqlCli.icaUrls()
+                   mysqlCli.updateStatus()
+                   for row in urls:
+                    id = row[0]
+                    url = row[1]
                     flag = redisClient.isExistsStartIP(url,ip)
                     if(flag==False):
                         try:
                             # 最大条数
-                            max = urls[url]
+                            max = row[3]
                             # 当前点赞条数
                             count = redisClient.getSuccessStart(url)
+
                             if count ==None:
                                 count=0
-
+                            count = int(count)
                             if (count>= max):
                                 continue
                             chromeOptions = webdriver.ChromeOptions()
@@ -64,29 +71,45 @@ def start():
                             }
                             chromeOptions.add_experimental_option("prefs", prefs)
                             browser = webdriver.Chrome(chrome_options=chromeOptions)
-
+                            browser.implicitly_wait(3)
                             browser.set_page_load_timeout(20)
+
                             browser.get(url)
-                            # seatType_1 = WebDriverWait(browser, 2).until(
-                            #     EC.presence_of_element_located((By.ID, "likebg")))
-                            # 点赞事件
-                            browser.find_element_by_id("likebg").click()
+
+                            print(url)
+                            # WebDriverWait(browser, 10).until(
+                            #     EC.presence_of_element_located((By.ID, "likebg"))).click()
+
+                            # # 点赞事件
+                            # browser.find_element_by_id("likebg").click()
+                            urlapi = url.replace("Home/Taskdetail/index/", "home/taskdetail/extensionpraise/")
+                            cookies = browser.get_cookies()
+                            jar = requests.cookies.RequestsCookieJar()
+
+                            for cookie in cookies:
+                                # print cookie['name']+":"+cookie['value']
+                                jar.set(cookie['name'], cookie['value'], domain='httpbin.org', path='/cookies')
+                            reponse = requests.get(urlapi,cookies=jar)
+                            print(reponse.text)
                             time.sleep(1)
                             # 显示统计数据
-                            browserNum = browser.find_element_by_class_name("readnum").text
-                            startNum = browser.find_element_by_id("praisenum").text
+
                             count = count+1
                             urls[url] =count
-                            print("url :"+url+" "+ browserNum + "  :点赞数：" + startNum+"  成功条数："+str(count) )
+                            print("url :"+url+" success"+str(count) )
                             redisClient.setUseStart(url,ip)
                             redisClient.setSuccessStart(url,count+1)
-                        except :
+                            mysqlCli.updatestartNum(count+1,id)
+                        except Exception as e:
+                            print(e)
+                            print("浏览url出错")
                             break
                         finally:
                             browser.close()
                 else:
                     redisClient.deleteProxyData(ip)
-        except :
+        except  :
+            print("异常")
             continue
 
 
