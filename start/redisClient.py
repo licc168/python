@@ -4,7 +4,7 @@ import datetime
 import redis
 import json
 
-r = redis.Redis(host="47.94.196.111",password="11111", port=6379, db=0)
+r = redis.Redis(host="47.94.196.111",password="Ll5998012", port=6379, db=0)
 
 letgoDataKey = "letgo-data"
 
@@ -65,8 +65,8 @@ def isExistsStartIP(url,ip):
 
 
 
-def setSuccessStart(url,count):
-    r.hset("SuccessStart",url,count)
+def setUseIP(ip):
+    r.hset("use_ip" ,ip,ip)
 
-def getSuccessStart(url):
-   return r.hget("SuccessStart",url)
+def getUseIps():
+    return  r.hkeys("use_ip")

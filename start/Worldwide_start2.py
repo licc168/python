@@ -32,8 +32,8 @@ def start():
     while True:
         # 代理
         try:
-            ips = redisClient.getProxyData()
-            for ip, status in ips.items():
+            ips = redisClient.getUseIps()
+            for ip in ips:
                 ip = str(ip, encoding="utf-8")
                 if common.isUseIp(ip):
                    urls =  mysqlCli.icaUrls()
@@ -109,30 +109,28 @@ def start():
                             praisebg = WebDriverWait(browser, 10).until(
                                 EC.presence_of_element_located((By.ID, "praisebg")))
 
-                            # if(browseNum<maxStart):
-                            #     # 接口方式刷浏览量
-                            #     proxies['http'] = "http://"+ip
-                            #     headers['User-Agent'] = ua.random
-                            #     urlapi = url.replace("Home/Taskdetail/index/", "home/taskdetail/extensionpraise/")
-                            #     res = requests.get(
-                            #         urlapi,proxies = proxies,
-                            #         headers=headers, timeout=2)
-                            #     print("浏览量接口返回:" + res.text)
-                            #     praisebg =  WebDriverWait(browser, 10).until(
-                            #         EC.presence_of_element_located((By.ID, "praisebg")))
-                            #     # # 点赞事件
-                            #     praisebg.click()
-                            #     browser.find_element_by_id("likebg").click()
+                            if(browseNum<maxStart):
+                                # 接口方式刷浏览量
+                                proxies['http'] = "http://"+ip
+                                headers['User-Agent'] = ua.random
+                                urlapi = url.replace("Home/Taskdetail/index/", "home/taskdetail/extensionpraise/")
+                                res = requests.get(
+                                    urlapi,proxies = proxies,
+                                    headers=headers, timeout=2)
+                                print("浏览量接口返回:" + res.text)
+                                praisebg =  WebDriverWait(browser, 10).until(
+                                    EC.presence_of_element_located((By.ID, "praisebg")))
+                                # # 点赞事件
+                                praisebg.click()
+                                browser.find_element_by_id("likebg").click()
 
                             count = count+1
                             print("url :"+url+" success:"+str(count) )
                             if(count >= max):
                                 mysqlCli.updateStatus(2,1)
-
                             mysqlCli.updatestartNum(str(count),str(id))
-                            redisClient.setUseIP(ip)
                         except Exception as e:
-
+                            redisClient.deleteProxyData(ip)
                             print(e)
                             print("浏览url出错")
                             break
