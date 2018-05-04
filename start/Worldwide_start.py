@@ -36,50 +36,15 @@ def start():
             for ip, status in ips.items():
                 ip = str(ip, encoding="utf-8")
                 if common.isUseIp(ip):
-                   urls =  mysqlCli.icaUrls()
-                   mysqlCli.updateStatus(1,0)
-                   for row in urls:
-                    id = row[0]
-                    url = row[1]
+                   urls =  ["https://cn.iac-worldwide.com/api.php/Home/Taskdetail/index/if_id/826/sharefrom/8198"]
+                   for url in urls:
+
                     flag = redisClient.isExistsStartIP(url,ip)
                     if(flag==False):
 
                         try:
                             redisClient.setUseStart(url, ip)
-                            # 最大浏览条数
-                            max = row[3]
-                            #最大点赞量
-                            maxStart = row[4]
 
-                            # 当前完成的浏览量
-                            count = mysqlCli.getStartNumById(id)
-
-
-
-
-                            if count ==None:
-                                count=0
-                            count = int(count)
-                            if (count>= max):
-
-                                continue
-                            # 完成点赞量
-                            browseNum = mysqlCli.getBrowseNumById(id)
-                           # 谷歌浏览器
-                            # chromeOptions = Options()
-                            #
-                            # # chromeOptions.add_argument('window-size=1920x3000')  # 指定浏览器分辨率
-                            # chromeOptions.add_argument('--hide-scrollbars')  # 隐藏滚动条, 应对一些特殊页面
-                            # chromeOptions.add_argument('blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
-                            # # chromeOptions.add_argument('--headless')
-                            # # chromeOptions.add_argument('--disable-gpu')  # 谷歌文档提到需要加上这个属性来规避bug
-                            # chromeOptions.add_argument('--proxy-server=' + ip)
-                            # # chromeOptions.add_experimental_option("prefs", prefs)
-                            # # chromeOptions.add_argument(
-                            # #     'user-agent="Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36"')
-                            #
-                            # browser = webdriver.Chrome(chrome_options=chromeOptions)
-                            # browser = webdriver.Chrome()
                             options = Options()
                             options.add_argument('-headless')
                             profile = webdriver.FirefoxProfile()
@@ -108,28 +73,6 @@ def start():
                             print(url)
                             praisebg = WebDriverWait(browser, 10).until(
                                 EC.presence_of_element_located((By.ID, "praisebg")))
-
-                            # if(browseNum<maxStart):
-                            #     # 接口方式刷浏览量
-                            #     proxies['http'] = "http://"+ip
-                            #     headers['User-Agent'] = ua.random
-                            #     urlapi = url.replace("Home/Taskdetail/index/", "home/taskdetail/extensionpraise/")
-                            #     res = requests.get(
-                            #         urlapi,proxies = proxies,
-                            #         headers=headers, timeout=2)
-                            #     print("浏览量接口返回:" + res.text)
-                            #     praisebg =  WebDriverWait(browser, 10).until(
-                            #         EC.presence_of_element_located((By.ID, "praisebg")))
-                            #     # # 点赞事件
-                            #     praisebg.click()
-                            #     browser.find_element_by_id("likebg").click()
-
-                            count = count+1
-                            print("url :"+url+" success:"+str(count) )
-                            if(count >= max):
-                                mysqlCli.updateStatus(2,1)
-
-                            mysqlCli.updatestartNum(str(count),str(id))
                             redisClient.setUseIP(ip)
                         except Exception as e:
 
