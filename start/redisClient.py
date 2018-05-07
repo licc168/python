@@ -4,7 +4,7 @@ import datetime
 import redis
 import json
 
-r = redis.Redis(host="47.94.196.111",password="111111", port=6379, db=0)
+r = redis.Redis(host="47.94.196.111",password="1111", port=6379, db=0)
 
 letgoDataKey = "letgo-data"
 

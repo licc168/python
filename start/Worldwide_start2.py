@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from fake_useragent import UserAgent
+import time
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import requests
@@ -20,7 +20,7 @@ urls={
 
       }
 
-ua = UserAgent()
+
 headers = {}
 headers['User-Agent']='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36'
 
@@ -37,7 +37,7 @@ def start():
                 ip = str(ip, encoding="utf-8")
                 if common.isUseIp(ip):
                    urls =  mysqlCli.icaUrls()
-                   mysqlCli.updateStatus(1,0)
+                   mysqlCli.updateStatus1()
                    for row in urls:
                     id = row[0]
                     url = row[1]
@@ -47,24 +47,22 @@ def start():
                         try:
                             redisClient.setUseStart(url, ip)
                             # 最大浏览条数
-                            max = row[3]
+                            maxBrowseNum = row[3]
                             #最大点赞量
-                            maxStart = row[4]
+                            maxPraiseNum = row[4]
 
                             # 当前完成的浏览量
-                            count = mysqlCli.getStartNumById(id)
-
-
-
-
-                            if count ==None:
-                                count=0
-                            count = int(count)
-                            if (count>= max):
-
-                                continue
-                            # 完成点赞量
                             browseNum = mysqlCli.getBrowseNumById(id)
+
+
+
+
+                            if browseNum ==None:
+                                browseNum=0
+                            browseNum = int(browseNum)
+                            if (browseNum>= maxBrowseNum):
+                                continue
+
                            # 谷歌浏览器
                             # chromeOptions = Options()
                             #
@@ -104,31 +102,41 @@ def start():
                             browser = webdriver.Firefox(executable_path='geckodriver', firefox_options=options)
                             browser.set_page_load_timeout(20)
                             browser.get(url)
-
+                            time.sleep(5)
                             print(url)
                             praisebg = WebDriverWait(browser, 10).until(
                                 EC.presence_of_element_located((By.ID, "praisebg")))
 
-                            if(browseNum<maxStart):
+
+                            # 完成点赞量
+                            praiseNum = mysqlCli.getPraiseNumById(id)
+                            if(praiseNum<maxPraiseNum):
                                 # 接口方式刷浏览量
-                                proxies['http'] = "http://"+ip
-                                headers['User-Agent'] = ua.random
-                                urlapi = url.replace("Home/Taskdetail/index/", "home/taskdetail/extensionpraise/")
-                                res = requests.get(
-                                    urlapi,proxies = proxies,
-                                    headers=headers, timeout=2)
-                                print("浏览量接口返回:" + res.text)
+                                # proxies['http'] = "http://"+ip
+                                # headers['User-Agent'] = ua.random
+                                # urlapi = url.replace("Home/Taskdetail/index/", "home/taskdetail/extensionpraise/")
+                                # res = requests.get(
+                                #     urlapi,proxies = proxies,
+                                #     headers=headers, timeout=2)
+                                # print("浏览量接口返回:" + res.text)
+
                                 praisebg =  WebDriverWait(browser, 10).until(
                                     EC.presence_of_element_located((By.ID, "praisebg")))
                                 # # 点赞事件
                                 praisebg.click()
                                 browser.find_element_by_id("likebg").click()
+                                praiseNum = praiseNum + 1
+                                mysqlCli.updatepraiseNum(praiseNum, id)
 
-                            count = count+1
-                            print("url :"+url+" success:"+str(count) )
-                            if(count >= max):
-                                mysqlCli.updateStatus(2,1)
-                            mysqlCli.updatestartNum(str(count),str(id))
+                            # 显示统计数据
+                            browserNumTotal = browser.find_element_by_class_name("readnum").text
+                            startNumTotal = browser.find_element_by_id("praisenum").text
+                            browseNum = browseNum+1
+                            print("url :" + url + " " + browserNumTotal + "  :点赞数：" + startNumTotal + "  成功条数：" + str(browseNum))
+
+                            if(browseNum >= maxBrowseNum):
+                                mysqlCli.updateStatusById(2,1,id)
+                                mysqlCli.updateBrowseNum(browseNum,id)
                         except Exception as e:
                             redisClient.deleteProxyData(ip)
                             print(e)
